@@ -1,0 +1,33 @@
+{
+  "name": "express-api",
+  "version": "1.0.0",
+  "description": "Esta es mi primer API con express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "api",
+    "express",
+    "node"
+  ],
+  "author": "Martín Luz",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-mailjet": "^6.0.8",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
