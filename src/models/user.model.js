@@ -4,7 +4,8 @@ const userSchema = require("../models/schemas/userSchema");
 
 const User = mongoose.model("User", userSchema); 
 
-module.exports =  User;
+module.exports = User;
+
 /*
 const users = [
   {
@@ -25,7 +26,6 @@ const users = [
   },
 ];
 
-const getUsers = () => users;
 
 const findUser = (name) => {
   const user = users.find((u) => u.name == name);

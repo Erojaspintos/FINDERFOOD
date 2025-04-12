@@ -14,4 +14,5 @@ authRouter.get("/users", getUsersController);
 authRouter.post("/login", payloadMiddleWare(userSchema), postAuthLogin);
 authRouter.post("/signup", payloadMiddleWare(userSchema), postAuthSignUp);
 
+
 module.exports = authRouter;
