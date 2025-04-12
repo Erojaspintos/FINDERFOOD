@@ -1,3 +1,14 @@
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true},
+  email: { type: String, required: true, unique: true},
+  name: { type: String, required: true},
+})
+
+module.exports = userSchema;
+
+/*
 const Joi = require("joi");
 
 const signUpSchema = Joi.object({
@@ -16,3 +27,4 @@ module.exports = {
   signUpSchema,
   loginSchema
 };
+*/ 

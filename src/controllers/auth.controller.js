@@ -1,23 +1,19 @@
 const jwt = require("jsonwebtoken");
 const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
-const {
-    saveUser,
-    findUserByUsername,
-    findUser,
-    isValidPassword,
-    getUsers,
-    findUserByEmail
-} = require("../models/user.model");
+const User = require("../models/user.model");
 
 const getUsersController = (req, res) => {
     res.status(200).json(getUsers());
   };
 
 const postAuthLogin = async (req, res) => {
+  console.log("hola");
     const { body } = req;
     const { email, password } = body;
-    const user = findUserByEmail(email);
+    const user = await User.findOne({email: email, password : password})
+
+    console.log(user);
 
     if (!user) {
         res.status(400).json({ message: "Credenciales inválidas" });
