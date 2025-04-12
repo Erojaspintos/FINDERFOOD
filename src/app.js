@@ -10,7 +10,6 @@ const authMiddleWare = require("./middlewares/auth.middleware");
 const sanitizerMiddleware = require("./middlewares/sanitizer.middleware");
 const privateRouter = require("./routes/private.router");
 const publicRouter = require("./routes/public.router");
-const { connect } = require("mongoose");
 const connectMongoDB = require("./models/schemas/mongo.client");
 
 (async () => {

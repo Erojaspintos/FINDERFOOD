@@ -2,10 +2,11 @@ const jwt = require("jsonwebtoken");
 const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
 const User = require("../models/user.model");
+const {getAll, findUser, isValidPassword} = require("../repositories/user.repository");
 
 const getUsersController = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await getAll();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los usuarios: " + error });
