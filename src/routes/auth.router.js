@@ -8,11 +8,10 @@ const {
     getUsersController,
 } = require("../controllers/auth.controller");
 
-const userSchema = require("../models/schemas/userSchema");
+const { loginSchema, signUpSchema } = require("./validations/user.validation");
 
 authRouter.get("/users", getUsersController);
-authRouter.post("/login", payloadMiddleWare(userSchema), postAuthLogin);
-authRouter.post("/signup", payloadMiddleWare(userSchema), postAuthSignUp);
-
+authRouter.post("/login", payloadMiddleWare(loginSchema), postAuthLogin);
+authRouter.post("/signup", payloadMiddleWare(signUpSchema), postAuthSignUp);
 
 module.exports = authRouter;

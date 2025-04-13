@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
-const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
-const User = require("../models/user.model");
-const {getAll, findUser, isValidPassword} = require("../repositories/user.repository");
-
+const {getAll, 
+  findUser, 
+  isValidPassword, 
+  saveUser} = require("../repositories/user.repository");
+  const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
+  
 const getUsersController = async (req, res) => {
   try {
     const users = await getAll();
@@ -14,12 +16,9 @@ const getUsersController = async (req, res) => {
 };
 
 const postAuthLogin = async (req, res) => {
-  console.log("hola")
   const { body } = req;
   const { email, password } = body;
-  const user = await User.findOne({ email: email, password: password })
-
-  console.log(user);
+  const user = await findUser(email)
 
   if (!user) {
     res.status(400).json({ message: "Credenciales inválidas" });
@@ -45,12 +44,18 @@ const postAuthLogin = async (req, res) => {
 const postAuthSignUp = async (req, res) => {
   const { body } = req;
   const { name, email, password, foodPreferences } = body;
-  if (findUserByEmail(email)) {
+
+  const user = await findUser(email);
+  if (user) {
     res.status(400).json({ message: "Email de usuario ya en uso" });
     return;
   }
-  const userID = await saveUser(name, email, password, foodPreferences);
-  res.status(201).json({ message: "Usuario creado exitosamente", id: userID });
+  try {
+    await saveUser(name, email, password, foodPreferences);
+    res.status(201).json({ message: "Usuario creado exitosamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Ha ocurrido un error registrando el usuario" });
+  }
 };
 
 module.exports = { postAuthLogin, postAuthSignUp, getUsersController };
