@@ -1,18 +1,11 @@
-const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const signUpSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(3).max(20).alphanum().required(),
-  foodPreferences: Joi.array().items(Joi.number()).min(1)
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  foodPreferences: { type: [Number], required: true }
 });
+//siteId{type: mongoose.Shchema.ObjectId, ref "Site", required: true} //esto es si quisieramos ponerle una referencia a un objeto en otra tabla, seguramente eso este en reseñas o otra
 
-const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(3).max(20).required(),
-});
-
-module.exports = {
-  signUpSchema,
-  loginSchema
-};
+module.exports = userSchema;

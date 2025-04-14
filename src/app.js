@@ -10,6 +10,16 @@ const authMiddleWare = require("./middlewares/auth.middleware");
 const sanitizerMiddleware = require("./middlewares/sanitizer.middleware");
 const privateRouter = require("./routes/private.router");
 const publicRouter = require("./routes/public.router");
+const connectMongoDB = require("./models/schemas/mongo.client");
+
+(async () => {
+  try {
+    await connectMongoDB();
+  } catch (error) {
+    console.log("Ha ocurrido un erro al intentar conectarse a MONGODB: ", error);
+    process.exit(1);
+  }
+})();
 
 // Middlewares
 app.use(express.json());
@@ -28,5 +38,8 @@ app.use("/v1", privateRouter);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Listen & serve PORT: ${PORT}! EEEEEE PROBANDING`);
+  console.log(`Listen & serve PORT: ${PORT}!`);
 });
+
+
+

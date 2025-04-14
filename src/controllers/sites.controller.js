@@ -1,38 +1,47 @@
 const {
-  getSites,
-  findSiteById,
-  createSite,
   updateSite,
   deleteSite,
   findReviewById,
-  addReview,
   deleteReview
 } = require("../models/database");
-const { message } = require("../models/schemas/reviewSchema");
 
-const getSitesController = (req, res) => {
+const { getSites,
+  getSiteById,
+  addReview,
+  createSite } = require("../repositories/site.repository");
+
+const getSitesController = async (req, res) => {
   const filter = req.query;
-  res.status(200).json(getSites(filter));
+  try {
+    const sites = await getSites(filter);
+    res.status(200).json(sites);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener los Sitios: " + error });
+  }
 };
 
-const getSiteController = (req, res) => {
+const getSiteController = async (req, res) => {
   const siteId = req.params.id;
-  const site = findSiteById(siteId);
-  if (site) {
+  try {
+    const site = await getSiteById(siteId);
     res.status(200).json(site);
-    return;
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener los sitios: " + error });
   }
-  res.status(404).json({
-    message: `No se ha el site con id: ${siteId}`,
-  });
 }
 
 const postSiteController = async (req, res) => {
   const { body } = req;
-  createSite(body);
-  res.status(201).json({
-    message: "Sitio creado correctamente",
-  });
+  const { id } = req.user;
+
+  try {
+    await createSite(body, id);
+    res.status(201).json({
+      message: "Sitio creado correctamente",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al crear el sitio: " + error });
+  }
 };
 
 const putSiteController = (req, res) => {
@@ -99,7 +108,7 @@ const deleteReviewController = (req, res) => {
   }
 }
 
-const postReviewSiteController = (req, res) => {
+const postReviewSiteController = async (req, res) => {
   const siteId = req.params.id;
   const reviewData = req.body;
   const userId = req.user?.id;
@@ -108,22 +117,21 @@ const postReviewSiteController = (req, res) => {
     return res.status(401).json({ message: `No autenticado` });
   }
 
-  const site = findSiteById(siteId);
+  const site = await getSiteById(siteId);
   if (!site) {
     return res.status(404).json({
       message: `El sitio con id: ${siteId} no fue encontrado.`,
     });
   }
 
-  const createdReview = addReview(siteId, reviewData, userId);
-  if (!createdReview) {
-    return res.status(400).json({
-      message: `El usuario ${userId} ya ingreso una resena para este lugar.`
-    });
-  }
+  try {
+    const createdReview = await addReview(site.id, reviewData, userId);
 
-  res.status(200).json(createdReview);
-};
+    res.status(200).json(createdReview);
+  } catch (error) {
+    res.status(500).json({ message: "Error al crear la reseña: " + error });
+  };
+}
 
 module.exports = {
   getSitesController,

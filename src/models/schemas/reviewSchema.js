@@ -1,10 +1,11 @@
-const Joi = require("joi");
+const mongoose = require("mongoose");
 
-// name, country, state, city, address, latitude, longitude, desciption
-const reviewSchema = Joi.object({
-  comment: Joi.string().min(3).max(100).required(),
-  stars: Joi.number().integer().min(1).max(5).required()
-  // userId: Joi.number().required()
+const reviewSchema = new mongoose.Schema({
+  id: { type: Number, required: true },
+  comment: { type: String, required: true },
+  stars: { type: Number, required: true, min: 1, max: 5 },
+  creationDate: { type: Date, required: true },
+  userId: { type: Number, required: true }
 });
 
-module.exports = {reviewSchema};
+module.exports = reviewSchema;
