@@ -1,14 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  getTodosController,
-  getTodoController,
-  postTodoController,
-  deleteTodoController,
-  putTodoController,
-} = require("../controllers/todos.controller");
-
 //OBLIGATORIO 
 const {
   getSitesController,
@@ -20,14 +12,11 @@ const {
   postReviewSiteController
 } = require("../controllers/sites.controller");
 
-const siteSchema = require("../models/schemas/siteSchema");
-const {reviewSchema} = require("../models/schemas/reviewSchema");
+const siteSchema = require("../routes/validations/site.validation");
+const {reviewSchema} = require("../routes/validations/review.validation");
 ///////////////////////////////////////////////////
 
 const payloadMiddleWare = require("../middlewares/paylod.middleware");
-const sanitizeMiddleWare = require("../middlewares/sanitizer.middleware");
-const { deleteReview } = require("../models/database");
-const { required } = require("joi");
 
 // Private Routes obligatorio
 router.get("/sites", getSitesController);

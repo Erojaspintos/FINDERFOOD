@@ -1,15 +1,18 @@
-const Joi = require("joi");
+const mongoose = require("mongoose");
+const reviewSchema = require("../schemas/reviewSchema");
 
-// name, country, state, city, address, latitude, longitude, desciption
-const siteSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-  country: Joi.string().min(3).max(20).required(),
-  state: Joi.string().min(3).max(20).required(),
-  city: Joi.string().min(3).max(20).required(),
-  address: Joi.string().min(3).max(50).required(),
-  description: Joi.string().required().min(10).max(300),
-  type: Joi.number().required(),
-  reviews: Joi.array().items(Joi.string())
+const siteSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  country: { type: String, required: true },
+  state: { type: String, required: true },
+  city: { type: String, required: true },
+  address: { type: String},
+  description: { type: String, required: true },
+  type: {type: Number , required: true },
+  latitude: {type: Number , required: true },
+  longitude: {type: Number , required: true },
+  reviews: {type: [reviewSchema], default: []
+  }
 });
 
 module.exports = siteSchema;

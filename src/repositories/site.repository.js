@@ -1,12 +1,31 @@
 const Site = require("../models/site.model");
-const mongoose = require("mongoose");
+const dayjs = require("dayjs");
 
-const createSite = async(name, userId) =>{
+const getSiteById = async (id) => {
+    return await Site.findOne({_id: id});
+}
+
+const getSites = async (filter) => {
+    return await Site.find(filter);
+}
+
+const createSite = async(model, userId) =>{
+
+    console.log(model);
+
     const newSite = new Site({
-        name : name,
-        userId : userId
+        name : model.name,
+        country : model.country,
+        state : model.state,
+        city : model.city,
+        address : model.address,
+        description: model.description,
+        type : model.type,
+        userId : userId,
+        latitude: model.latitude,
+        longitude: model.longitude,
+        reviews: []
     })
-
     await newSite.save();
 }
 /*
@@ -20,6 +39,26 @@ const deleteSite = async(id, userId)=>{
     await Site.deleteOne({_id: id, userId: userId});
 }
 
+
+const addReview = async(siteId, model, userId) =>{
+    const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    const site = await getSiteById(siteId);
+
+    site.reviews.push({
+        comment : model.comment,
+        stars : model.stars,
+        userId : userId,
+        creationDate : creationDate
+    });
+    
+    console.log(site)
+    await Site.updateOne(site);
+}
+
 module.exports = {
-    deleteSite
+    getSites,
+    getSiteById,
+    deleteSite,
+    createSite,
+    addReview
 }
