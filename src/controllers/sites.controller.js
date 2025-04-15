@@ -1,14 +1,10 @@
-const {
-  updateSite,
-  deleteSite,
-  findReviewById,
-  deleteReview
-} = require("../models/database");
-
 const { getSites,
   getSiteById,
   addReview,
-  createSite } = require("../repositories/site.repository");
+  createSite,
+  deleteSite,
+  updateSite,
+  deleteReview} = require("../repositories/site.repository");
 
 const getSitesController = async (req, res) => {
   const filter = req.query;
@@ -44,67 +40,42 @@ const postSiteController = async (req, res) => {
   }
 };
 
-const putSiteController = (req, res) => {
-
+const putSiteController = async (req, res) => {
   const siteId = req.params.id;
   const { body } = req;
 
-  console.log("Buscando id:", siteId); //borrar
-  let site = findSiteById(siteId);
-  if (site) {
-    site = updateSite(siteId, body);
+  try {
+    await updateSite(siteId, body);
     res.status(200).json(site);
     return;
+  } catch (error) {
+    res.status(500).json({ message: "Error al modificar el sitio: " + error });
   }
 
-  res.status(404).json({
-    message: `No se ha encontrado el sitio con id: ${siteId}.`,
-  });
 }
 
-const deleteSiteController = (req, res) => {
+const deleteSiteController = async (req, res) => {
   const siteId = req.params.id;
-  deleteSite(siteId);
-  res.status(200).json({
-    message: "Sitio eliminado correctamente",
-  });
+  //validar quien va a poder eliminar, yo creo que el usuario que lo creó o un usuario admin?
+  try {
+    await deleteSite(siteId);
+    res.status(200).json({
+      message: "Sitio eliminado correctamente",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el sitio: " + error });
+  }
 }
 
-const deleteReviewController = (req, res) => {
+const deleteReviewController = async (req, res) => {
   const siteId = req.params.id;
   const reviewId = req.body.reviewId;
-  const site = findSiteById(siteId);
-  if (site == null) {
-    res.status(404).json({
-      message: `No se ha encontrado el sitio con id: ${siteId}.`,
-    });
-
-    return;
-  }
-  else {
-    const review = findReviewById(site, reviewId);
-
-    if (review == null) {
-      res.status(404).json({
-        message: `No se ha encontrado la reseña con id: ${siteId}.`,
-      });
-
-      return;
-    }
-    else {
-      if (review.userId != req.user.id) {
-        res.status(401).json({
-          message: `No tiene autorización para eliminar la reseña ${reviewId}.`,
-        });
-        return;
-      }
-
-      deleteReview(siteId, reviewId);
-
-      res.status(200).json({
-        message: "Resena eliminada correctamente",
-      });
-    }
+ 
+  try {
+    await deleteReview(siteId, reviewId)
+    res.status(200).json({message : "Reseña eliminada correctamente."});
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar la reseña: " + error });
   }
 }
 
