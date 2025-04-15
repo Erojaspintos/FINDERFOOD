@@ -94,19 +94,6 @@ const deleteSite = (id) => {
   }
 }
 
-const findReviewById = (site, reviewId) => {
-  const review = site.reviews.find(s => s.id == reviewId);
-  return review;
-};
-
-const deleteReview = (siteId, reviewId) => {
-  const index = findByIndex(siteId);
-  const reviewIndex = sites.findIndex(s => s.id == reviewId);
-
-  if (index >= 0)
-    sites[index].reviews.splice(reviewIndex, 1);
-}
-
 const addReview = (siteId, body, userId) => {
   const index = findByIndex(siteId);
   if (index < 0) return null;

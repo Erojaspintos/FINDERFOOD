@@ -25,7 +25,7 @@ router.delete("/sites/:id", deleteSiteController);
 router.delete("/sites/:id/reviews", deleteReviewController);
 
 router.post("/sites", payloadMiddleWare(siteSchema), postSiteController);
-router.put("/sites/:id", payloadMiddleWare(siteSchema), putSiteController);
+router.put("/sites/:id", putSiteController); // capaz se puede hacer un SiteUpdateSchema con los mismos atributos pero sin required para poder modificar solo los que quiera
 
 router.post("/sites/:id/reviews", payloadMiddleWare(reviewSchema), postReviewSiteController);
 
