@@ -11,6 +11,10 @@ const logRequest = (req) => {
     req.url
   } \n`;
 
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
   fs.appendFile(logFile, logMessage, (err) => {
     if (err) console.error("Error writing log: ", err);
   });

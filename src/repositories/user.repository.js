@@ -6,21 +6,22 @@ const getAll = async () => {
 }
 
 const findUser = async (email) => {
-    return await User.findOne({email : email});
+    return await User.findOne({ email: email });
 }
 
-const saveUser = async (name, email, password,foodPreferences) => {
+const saveUser = async (name, email, password, foodPreferences, role) => {
     const hashedPassword = await bcrypt.hash(password, 10);
-   console.log("HOA"+foodPreferences)
+    console.log("HOA" + foodPreferences)
     const newUser = new User({
-      name: name,
-      email: email,
-      password: hashedPassword,
-      foodPreferences: foodPreferences
+        name: name,
+        email: email,
+        password: hashedPassword,
+        foodPreferences: foodPreferences,
+        role: role,
     });
     const res = await newUser.save();
     return res;
-  };
+};
 
 const isValidPassword = async (password, userPassword) => {
     const result = await bcrypt.compare(password, userPassword);

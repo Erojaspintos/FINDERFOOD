@@ -11,6 +11,7 @@ const sanitizerMiddleware = require("./middlewares/sanitizer.middleware");
 const privateRouter = require("./routes/private.router");
 const publicRouter = require("./routes/public.router");
 const connectMongoDB = require("./models/schemas/mongo.client");
+const roleMiddleware = require("./middlewares/role.middleware");
 
 (async () => {
   try {
@@ -31,6 +32,7 @@ app.use(sanitizerMiddleware);
 // Public
 app.use("/public", publicRouter);
 app.use("/v1/auth", authRouter);
+
 
 app.use(authMiddleWare);
 // Private

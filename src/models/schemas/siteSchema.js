@@ -8,9 +8,12 @@ const siteSchema = new mongoose.Schema({
   city: { type: String, required: true },
   address: { type: String},
   description: { type: String, required: true },
-  type: {type: Number , required: true },
+  type: {type: Number , required: true }, // 1 lugar donde ir a comer, 2 lugar donde ir a comprar
   latitude: {type: Number , required: true },
   longitude: {type: Number , required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, //usuario creador del site
+
+  // foodPreferences 
   reviews: {type: [reviewSchema], default: []
   }
 });

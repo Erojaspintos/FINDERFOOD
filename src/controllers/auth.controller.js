@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken");
 
-const {getAll, 
-  findUser, 
-  isValidPassword, 
-  saveUser} = require("../repositories/user.repository");
-  const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
-  
+const { getAll,
+  findUser,
+  isValidPassword,
+  saveUser } = require("../repositories/user.repository");
+const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
+
 const getUsersController = async (req, res) => {
   try {
     const users = await getAll();
@@ -31,7 +31,7 @@ const postAuthLogin = async (req, res) => {
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     AUTH_SECRET_KEY,
     {
       expiresIn: "1h"
@@ -43,7 +43,7 @@ const postAuthLogin = async (req, res) => {
 
 const postAuthSignUp = async (req, res) => {
   const { body } = req;
-  const { name, email, password, foodPreferences } = body;
+  const { name, email, password, foodPreferences, role } = body;
 
   const user = await findUser(email);
   if (user) {
@@ -51,7 +51,7 @@ const postAuthSignUp = async (req, res) => {
     return;
   }
   try {
-    await saveUser(name, email, password, foodPreferences);
+    await saveUser(name, email, password, foodPreferences, role);
     res.status(201).json({ message: "Usuario creado exitosamente" });
   } catch (error) {
     res.status(500).json({ message: "Ha ocurrido un error registrando el usuario" });
