@@ -48,15 +48,23 @@ const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const site = await getSiteById(siteId);
 
-    site.reviews.push({
+    if (!site) {
+        throw new Error(`Sitio con id ${siteId} no encontrado.`);
+    }
+
+    const newReview = {
         comment: model.comment,
         stars: model.stars,
         userId: userId,
         creationDate: creationDate
-    });
+    };
 
-    console.log(site)
-    await Site.updateOne(site);
+    site.reviews.push(newReview);
+    await site.save(); 
+    return site.reviews.at(-1);
+
+
+  //  await Site.save(site);
 }
 
 const updateSite = async (siteId, model) => {
