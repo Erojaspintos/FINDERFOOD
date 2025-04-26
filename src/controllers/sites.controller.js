@@ -44,21 +44,19 @@ const postSiteController = async (req, res) => {
 };
 
 const putSiteController = async (req, res) => {
-
   const siteId = req.params.id;
   const { body } = req;
-
+  
   try {
     const site = await updateSite(siteId, body);
     if (!site) {
       return res.status(404).json({ message: `Sitio con id ${siteId} no encontrado.` }); //mismo caso que el get del sitio null
     }
-    res.status(200).json(site);
+    res.status(200).json({message: `Sitio con id ${siteId} actualizado correctamente.` , site: site});
     return;
   } catch (error) {
     res.status(500).json({ message: "Error al modificar el sitio: " + error });
   }
-
 }
 
 const deleteSiteController = async (req, res) => {

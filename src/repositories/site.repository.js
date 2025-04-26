@@ -1,5 +1,6 @@
 const Site = require("../models/site.model");
 const dayjs = require("dayjs");
+const _getSitesRedisKey = (userId)=> `userId: ${userId}-sites`;
 
 const getSiteById = async (id) => {
     /*aca usamos trycatch porque en el caso de que el FindOne no encuentre con el id que le pasamos, creimos que site se asignaba null pero al parecer no, 
@@ -17,13 +18,24 @@ const getSiteById = async (id) => {
 }
 
 const getSites = async (filter) => {
-    return await Site.find(filter);
+  //  const redisClient = await connectToRedis();
+ //   const sitesRedisKey = _getSitesRedisKey(userId);
+  //  let sites = null;// await redisClient.get(sitesRedisKey);
+  //const users = await User.find({ age: { $gt: 30 } });
+
+ //   if(!sites){
+      return await Site.find(filter);
+
+      //  redisClient.set(sitesRedisKey, JSON.stringify(sites), {ex: 60});
+//    }
+ //   else{
+ //       console.log("[Reading rom Redis]");
+ //   }
+
+ //   return sites;
 }
 
 const createSite = async (model, userId) => {
-
-    console.log(model);
-
     const newSite = new Site({
         name: model.name,
         country: model.country,
@@ -37,6 +49,7 @@ const createSite = async (model, userId) => {
         longitude: model.longitude,
         reviews: []
     })
+   
     await newSite.save();
 }
 
@@ -48,23 +61,15 @@ const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const site = await getSiteById(siteId);
 
-    if (!site) {
-        throw new Error(`Sitio con id ${siteId} no encontrado.`);
-    }
-
-    const newReview = {
+    site.reviews.push({
         comment: model.comment,
         stars: model.stars,
         userId: userId,
         creationDate: creationDate
-    };
+    });
 
-    site.reviews.push(newReview);
-    await site.save(); 
-    return site.reviews.at(-1);
-
-
-  //  await Site.save(site);
+    console.log(site)
+    await Site.updateOne(site);
 }
 
 const updateSite = async (siteId, model) => {
