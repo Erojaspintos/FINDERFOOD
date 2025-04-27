@@ -1,6 +1,6 @@
 const Site = require("../models/site.model");
+const connectToRedis = require("../services/redis.service");
 const dayjs = require("dayjs");
-const _getSitesRedisKey = (userId)=> `userId: ${userId}-sites`;
 
 const getSiteById = async (id) => {
     /*aca usamos trycatch porque en el caso de que el FindOne no encuentre con el id que le pasamos, creimos que site se asignaba null pero al parecer no, 
@@ -10,30 +10,30 @@ const getSiteById = async (id) => {
         let site = await Site.findOne({ _id: id });
         console.log("site despues del findOne")
         return site;
-        
+
     } catch (error) {
         console.log("no encontro el site")
         return null;
     }
 }
 
-const getSites = async (filter) => {
-  //  const redisClient = await connectToRedis();
- //   const sitesRedisKey = _getSitesRedisKey(userId);
-  //  let sites = null;// await redisClient.get(sitesRedisKey);
-  //const users = await User.find({ age: { $gt: 30 } });
+const _getSitesRedisKey = (userId) => `userId: ${userId}-sites`;
 
- //   if(!sites){
-      return await Site.find(filter);
+const getSites = async (filter, userId) => {
+    const redisClient = await connectToRedis();
+    const sitesRedisKey = _getSitesRedisKey(userId);
+    let sites = await redisClient.get(sitesRedisKey);
 
-      //  redisClient.set(sitesRedisKey, JSON.stringify(sites), {ex: 60});
-//    }
- //   else{
- //       console.log("[Reading rom Redis]");
- //   }
+    if (!sites) {
+        console.log("[Reading from Mongo]");
+        sites = await Site.find(filter);
+        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 60 }); // ese 60 es pa que dure un mintuo
+    } else
+        console.log("[Reading from Redis]");
 
- //   return sites;
-}
+    return sites;
+};
+
 
 const createSite = async (model, userId) => {
     const newSite = new Site({
@@ -49,7 +49,7 @@ const createSite = async (model, userId) => {
         longitude: model.longitude,
         reviews: []
     })
-   
+
     await newSite.save();
 }
 
@@ -90,16 +90,16 @@ const deleteReview = async (siteId, reviewId) => {
     const review = site.reviews.id(reviewId); // o usar .find(...) como opción 2
 
     if (!review)
-      throw new Error(`Review con id ${reviewId} no encontrada en el sitio ${siteId}.`);
-  
+        throw new Error(`Review con id ${reviewId} no encontrada en el sitio ${siteId}.`);
+
     const result = await Site.updateOne(
         { _id: siteId },
         { $pull: { reviews: { _id: reviewId } } }
-      );
-    
-      if (result.modifiedCount === 0) {
+    );
+
+    if (result.modifiedCount === 0) {
         throw new Error(`No se pudo eliminar la review con id ${reviewId}.`);
-      }
+    }
 };
 
 module.exports = {
