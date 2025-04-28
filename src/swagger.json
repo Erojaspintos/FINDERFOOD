@@ -1,0 +1,213 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "FinderFood API",
+      "version": "1.0.0",
+      "description": "API REST para encontrar y reseñar lugares seguros para personas con restricciones alimentarias."
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3001",
+        "description": "Servidor de desarrollo"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      },
+      "schemas": {
+        "Site": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "example": "La Comedia" },
+            "country": { "type": "string", "example": "Argentina" },
+            "state": { "type": "string", "example": "Buenos Aires" },
+            "city": { "type": "string", "example": "Rosario" },
+            "address": { "type": "string", "example": "Calle Córdoba 1234" },
+            "description": { "type": "string", "example": "Restaurante con opciones vegetarianas y sin gluten." },
+            "type": { "type": "number", "example": 1 },
+            "latitude": { "type": "number", "example": -32.9472 },
+            "longitude": { "type": "number", "example": -60.6306 }
+          }
+        },
+       "User": {
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "example": "Ezequiel Rojas" },
+    "email": { "type": "string", "example": "ezequiel@gmail.com" },
+    "password": { "type": "string", "example": "password123" },
+    "foodPreferences": { 
+      "type": "array",
+      "items": { "type": "number", "example": 1 }
+    },
+    "role": {
+      "type": "string",
+      "example": "usuario_consumidor",
+      "enum": [
+        "admin",
+        "usuario_consumidor",
+        "usuario_restaurant",
+        "usuario_vendedor"
+      ]
+    }
+  }
+},
+        "Review": {
+          "type": "object",
+          "properties": {
+            "rating": { "type": "number", "example": 5 },
+            "comment": { "type": "string", "example": "Excelente lugar para celíacos." }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "BearerAuth": []
+      }
+    ],
+    "paths": {
+      "/api/sites": {
+        "get": {
+          "summary": "Obtener todos los sitios",
+          "security": [{ "BearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "Lista de sitios obtenida con éxito",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Site" }
+                  }
+                }
+              }
+            },
+            "401": { "description": "No autorizado" }
+          }
+        },
+        "post": {
+          "summary": "Crear un nuevo sitio",
+          "security": [{ "BearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Site" }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Sitio creado exitosamente"
+            },
+            "401": { "description": "No autorizado" }
+          }
+        }
+      },
+      "/api/sites/{id}": {
+        "get": {
+          "summary": "Obtener un sitio por ID",
+          "security": [{ "BearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Sitio encontrado",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Site" }
+                }
+              }
+            },
+            "401": { "description": "No autorizado" },
+            "404": { "description": "Sitio no encontrado" }
+          }
+        }
+      },
+      "/api/sites/{id}/review": {
+        "post": {
+          "summary": "Agregar una reseña a un sitio",
+          "security": [{ "BearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Review" }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Reseña creada exitosamente"
+            },
+            "401": { "description": "No autorizado" },
+            "404": { "description": "Sitio no encontrado" }
+          }
+        }
+      },
+      "/api/users/register": {
+        "post": {
+          "summary": "Registrar un nuevo usuario",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Usuario registrado exitosamente"
+            },
+            "400": { "description": "Error en los datos de registro" }
+          }
+        }
+      },
+      "/api/users/login": {
+        "post": {
+          "summary": "Iniciar sesión",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email": { "type": "string", "example": "emilia@gmail.com" },
+                    "password": { "type": "string", "example": "password123" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Login exitoso con token JWT"
+            },
+            "401": { "description": "Credenciales inválidas" }
+          }
+        }
+      }
+    }
+  }
+  
