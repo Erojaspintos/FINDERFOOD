@@ -28,6 +28,7 @@
     "mongoose": "^8.13.2",
     "morgan": "^1.10.0",
     "node-mailjet": "^6.0.8",
+    "swagger-ui-express": "^5.0.1",
     "xss": "^1.0.15"
   },
   "devDependencies": {
