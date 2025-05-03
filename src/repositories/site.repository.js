@@ -1,6 +1,7 @@
 const Site = require("../models/site.model");
 const connectToRedis = require("../services/redis.service");
 const dayjs = require("dayjs");
+const siteUpdateSchema = require('../models/schemas/siteUpdateSchema');
 
 const getSiteById = async (id) => {
     /*aca usamos trycatch porque en el caso de que el FindOne no encuentre con el id que le pasamos, creimos que site se asignaba null pero al parecer no, 
@@ -23,17 +24,40 @@ const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
     const sitesRedisKey = _getSitesRedisKey(userId);
     let sites = await redisClient.get(sitesRedisKey);
+    const mongoFilter = buildMongoFilter(filter);
+    const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
 
-    if (!sites) {
+    mongoFilter.location =  {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [filter.startLong, filter.startLat],
+          },
+          $maxDistance: maxDistance
+        }
+      };
+      // revisar lo del cache, porque si el filtro es diferente al anterior igualmente tengo que ir a mongo, aca localstorage no hay, como reviso si el filtro es el mismo ? 
+      if (!sites) {
         console.log("[Reading from Mongo]");
-        sites = await Site.find(filter);
-        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 60 }); // ese 60 es pa que dure un mintuo
+        sites = await Site.find(mongoFilter);
+        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 30 }); // ese 60 es pa que dure un mintuo
     } else
         console.log("[Reading from Redis]");
 
     return sites;
 };
 
+const buildMongoFilter = (filter) => {
+    const allowedFields = Object.keys(siteUpdateSchema.paths).filter(key => key !== '_id' && key !== '__v');
+    const mongoFilter = {};
+    for (const key in filter) {
+        if (allowedFields.includes(key)) {
+            mongoFilter[key] = filter[key];
+        }
+    }
+    
+    return mongoFilter;
+};
 
 const createSite = async (model, userId) => {
     const newSite = new Site({
