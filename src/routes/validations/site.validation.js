@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 // name, country, state, city, address, latitude, longitude, desciption
 const siteSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
+  name: Joi.string().min(3).max(30).required(),
   country: Joi.string().min(3).max(20).required(),
   state: Joi.string().min(3).max(20).required(),
   city: Joi.string().min(3).max(20).required(),

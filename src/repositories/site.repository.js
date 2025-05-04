@@ -71,6 +71,10 @@ const createSite = async (model, userId) => {
         userId: userId,
         latitude: model.latitude,
         longitude: model.longitude,
+        location: {
+            type: "Point",
+            coordinates: [model.longitude, model.latitude]
+        },
         reviews: []
     })
 
@@ -93,7 +97,8 @@ const addReview = async (siteId, model, userId) => {
     });
 
     console.log(site)
-    await Site.updateOne(site);
+    await site.save();
+//    await Site.updateOne(site);
 }
 
 const updateSite = async (siteId, model) => {
