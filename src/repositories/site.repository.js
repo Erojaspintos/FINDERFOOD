@@ -18,11 +18,11 @@ const getSiteById = async (id) => {
     }
 }
 
-const _getSitesRedisKey = (userId) => `userId: ${userId}-sites`;
+const _getSitesRedisKey = (userId, filter) => `userId: ${userId}-sites:${JSON.stringify(filter)}`;
 
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
-    const sitesRedisKey = _getSitesRedisKey(userId);
+    const sitesRedisKey = _getSitesRedisKey(userId, filter);
     let sites = await redisClient.get(sitesRedisKey);
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
