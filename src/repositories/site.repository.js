@@ -27,6 +27,7 @@ const getSites = async (filter, userId) => {
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
 
+    if (filter.startLat && filter.startLong) {
     mongoFilter.location =  {
         $near: {
           $geometry: {
@@ -36,14 +37,15 @@ const getSites = async (filter, userId) => {
           $maxDistance: maxDistance
         }
       };
-      // revisar lo del cache, porque si el filtro es diferente al anterior igualmente tengo que ir a mongo, aca localstorage no hay, como reviso si el filtro es el mismo ? 
+    }
       if (!sites) {
         console.log("[Reading from Mongo]");
         sites = await Site.find(mongoFilter);
         await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 30 }); // ese 60 es pa que dure un mintuo
-    } else
+    } else{
         console.log("[Reading from Redis]");
-
+        sites = JSON.parse(sites);
+    }
     return sites;
 };
 
@@ -98,14 +100,19 @@ const addReview = async (siteId, model, userId) => {
 
     console.log(site)
     await site.save();
-//    await Site.updateOne(site);
 }
 
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
     if (site) {
-        const updated = await Site.updateOne({ _id: siteId }, model);
-        return { ...site.toObject(), ...model };
+
+        //revisar con Eze, updated no hace nada
+       // const updated = await Site.updateOne({ _id: siteId }, model);
+        //return { ...site.toObject(), ...model };
+
+        await Site.updateOne({ _id: siteId }, model);
+        return getSiteById(siteId);
+
     } else {
         return null;
     }
