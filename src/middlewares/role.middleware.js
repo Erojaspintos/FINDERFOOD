@@ -4,6 +4,7 @@ const roleMiddleware = (...rolesPermitidos) => {
     return (req, res, next) => {
         const role = req.user?.role;
         if (!role) {
+            console.log(`Rol actual: ${role} no permitido - Permitidos: ${rolesPermitidos}`);
             return res.status(401).json({ message: "No autenticado aún" });
         }
 
@@ -12,6 +13,7 @@ const roleMiddleware = (...rolesPermitidos) => {
                 message: `Acceso denegado.`
             });
         }
+        console.log(`Rol actual: ${role} permitido - Permitidos: ${rolesPermitidos}`);
         next();
     };
 };
