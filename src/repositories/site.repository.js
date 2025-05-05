@@ -1,29 +1,24 @@
 const Site = require("../models/site.model");
-const connectToRedis = require("../services/redis.service");
+const { connectToRedis } = require("../services/redis.service");
 const dayjs = require("dayjs");
 const siteUpdateSchema = require('../models/schemas/siteUpdateSchema');
+const { Types } = require("mongoose");
 
 const getSiteById = async (id) => {
-    /*aca usamos trycatch porque en el caso de que el FindOne no encuentre con el id que le pasamos, creimos que site se asignaba null pero al parecer no, 
-    entonces nosotros para poder identificar esto queremos devolver null asi del otro lado notificar qeu el site no fue encontrado.
-    */
     try {
         let site = await Site.findOne({ _id: id });
-        console.log("site despues del findOne")
         return site;
-
     } catch (error) {
-        console.log("no encontro el site")
         return null;
     }
-}
+};
 
-const _getSitesRedisKey = (userId, filter) => `userId: ${userId}-sites:${JSON.stringify(filter)}`;
+const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.stringify(filter)}`;
 
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
-    console.log("key: "+sitesRedisKey)
+    console.log("key: " + sitesRedisKey)
     let sites = await redisClient.get(sitesRedisKey);
 
     const mongoFilter = buildMongoFilter(filter);
@@ -66,6 +61,17 @@ const buildMongoFilter = (filter) => {
 };
 
 const createSite = async (model, userId) => {
+
+    const siteExiste = await Site.findOne({
+        name: model.name,
+        latitude: model.latitude,
+        longitude: model.longitude
+    });
+
+    if (siteExiste) {
+        throw new Error("SITE_ALREADY_EXISTS");
+    }
+
     const newSite = new Site({
         name: model.name,
         country: model.country,
@@ -85,37 +91,7 @@ const createSite = async (model, userId) => {
     })
 
     await newSite.save();
-}
-
-const { Types } = require("mongoose");
-
-const deleteSite = async (id, userId) => {
-  console.log(id + " L 91 siterepository "+userId);
-
-  if (!Types.ObjectId.isValid(id)) {
-    throw new Error("ID de sitio inválido");
-  }
-  const result = await Site.deleteOne({ _id: id , userId: userId});
-
-  if (result.deletedCount == 0) {
-    throw new Error("No se encontró ningún sitio con esos datos");
-  }
 };
-
-const addReview = async (siteId, model, userId) => {
-    const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    const site = await getSiteById(siteId);
-
-    site.reviews.push({
-        comment: model.comment,
-        stars: model.stars,
-        userId: userId,
-        creationDate: creationDate
-    });
-
-    console.log(site)
-    await site.save();
-}
 
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
@@ -128,6 +104,47 @@ const updateSite = async (siteId, model) => {
     }
     else
         return null;
+};
+
+const deleteSite = async (id, userId, userRole) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new Error("El ID de sitio es inválido.");
+  }
+
+  const site = await Site.findOne({ _id: id });
+
+  if (!site) {
+    throw new Error("SITE_NOT_EXIST");
+  }
+
+  const isCreator = site.userId.toString() === userId.toString();
+  const isAdmin = userRole === "admin";
+
+  if (!isCreator && !isAdmin) {
+    throw new Error("USER_NOT_CREATOR");
+  }
+
+  const result = await Site.deleteOne({ _id: id });
+
+  if (result.deletedCount === 0) {
+    throw new Error("SITE_DELETE_FAILED");
+  }
+};
+
+
+const addReview = async (siteId, model, userId) => {
+    const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    const site = await getSiteById(siteId);
+
+    if (!site) throw new Error("SITE_NOT_EXIST");
+
+    site.reviews.push({
+        comment: model.comment,
+        stars: model.stars,
+        userId: userId,
+        creationDate: creationDate
+    });
+    await site.save();
 };
 
 const deleteReview = async (siteId, reviewId) => {
@@ -150,6 +167,25 @@ const deleteReview = async (siteId, reviewId) => {
     }
 };
 
+const updateSiteReview = async (siteId, reviewId, model, userId) => {
+
+    const site = await getSiteById(siteId);
+    if (!site) {
+        throw new Error("SITE_NOT_EXIST");
+    }
+    const review = site.reviews.find(r => r._id.toString() === reviewId);
+    if (!review) {
+        throw new Error("REVIEW_NOT_EXIST");
+    }
+    if (review.userId.toString() !== userId.toString()) {
+        throw new Error("USER_NOT_CREATOR");
+    }
+    review.comment = model.comment;
+    review.stars = model.stars;
+    await site.save();
+    return review;
+};
+
 module.exports = {
     getSites,
     getSiteById,
@@ -157,5 +193,6 @@ module.exports = {
     createSite,
     addReview,
     updateSite,
-    deleteReview
+    deleteReview,
+    updateSiteReview
 }

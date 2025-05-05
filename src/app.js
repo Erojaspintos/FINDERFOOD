@@ -13,7 +13,6 @@ const sanitizerMiddleware = require("./middlewares/sanitizer.middleware");
 const privateRouter = require("./routes/private.router");
 const publicRouter = require("./routes/public.router");
 const connectMongoDB = require("./models/schemas/mongo.client");
-const roleMiddleware = require("./middlewares/role.middleware");
 
 (async () => {
   try {
@@ -36,9 +35,8 @@ app.use(sanitizerMiddleware);
 app.use("/public", publicRouter);
 app.use("/v1/auth", authRouter);
 
-// Ruta publica para la documentacion
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // 
-
+// Ruta publica para la documentacion : http://localhost:3001/documentation/#/
+app.use("/documentation", swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // 
 
 app.use(authMiddleWare);
 // Private
@@ -49,6 +47,3 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Listen & serve PORT: ${PORT}!`);
 });
-
-
-

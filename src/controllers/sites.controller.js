@@ -4,13 +4,16 @@ const { getSites,
   createSite,
   deleteSite,
   updateSite,
-  deleteReview } = require("../repositories/site.repository");
+  deleteReview,
+  updateSiteReview } = require("../repositories/site.repository");
+
+const { cleanCache } = require("../services/redis.service");
 
 const getSitesController = async (req, res) => {
   const filter = req.query;
   const userId = req.user.id;
 
-  console.log("USERID EN GETSITECONTROLLER: "+userId)
+  console.log("USERID EN GETSITECONTROLLER: " + userId)
   try {
     const sites = await getSites(filter, userId);
     res.status(200).json(sites);
@@ -38,10 +41,16 @@ const postSiteController = async (req, res) => {
 
   try {
     await createSite(body, id);
+    await cleanCache(id);
+
     res.status(201).json({
       message: "Sitio creado correctamente",
     });
   } catch (error) {
+
+    if (error.message.includes("SITE_ALREADY_EXISTS")) {
+      return res.status(409).json({ message: "Ya existe un sitio con ese nombre y ubicación." });
+    }
     res.status(500).json({ message: "Error al crear el sitio: " + error });
   }
 };
@@ -49,79 +58,50 @@ const postSiteController = async (req, res) => {
 const putSiteController = async (req, res) => {
   const siteId = req.params.id;
   const { body } = req;
-  
+  const { id } = req.user;
+
   try {
     const site = await updateSite(siteId, body);
     if (!site) {
-      return res.status(404).json({ message: `Sitio con ID ${siteId} no encontrado.` }); 
+      return res.status(404).json({ message: `Sitio con ID ${siteId} no encontrado.` });
     }
-    res.status(200).json({message: `Sitio con id ${siteId} actualizado correctamente.` , site: site});
-    
-    return;
-  } catch (error) {
-      res.status(500).json({ message: error });
+    res.status(200).json({ message: `Sitio con id ${siteId} actualizado correctamente.`, site: site });
+    await cleanCache(id);
+  }
+  catch (error) {
+    res.status(500).json({ message: error });
   }
 }
 
 const deleteSiteController = async (req, res) => {
   const siteId = req.params.id;
   const userId = req.user?.id;
+  const userRole = req.user.role;
 
-  //validar quien va a poder eliminar, yo creo que el usuario que lo creó o un usuario admin?
   try {
-    site = await deleteSite(siteId, userId);
+    await deleteSite(siteId, userId, userRole);
+    await cleanCache(userId);
 
     res.status(200).json({
-      message: "Sitio eliminado correctamente",
+      message: "Sitio eliminado correctamente.",
     });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el sitio: " + error });
   }
-}
-
-const deleteReviewController = async (req, res) => {
-  const siteId = req.params.id;
-  const reviewId = req.body.reviewId;
-  const userId = req.user.id;
-
-  if (!userId) {
-    return res.status(401).json({ message: "No autenticado." });
-  }
-
-  try {
-    const site = await getSiteById(siteId);
-    if (!site) {
-      return res.status(404).json({ message: `Sitio con id ${siteId} no encontrado.` });
+  catch (error) {
+    if (error.message == "SITE_NOT_EXIST") {
+      return res.status(404).json({ message: "No existe un sitio con ese ID." });
     }
 
-    const review = site.reviews.id(reviewId);
-    if (!review) {
-      return res.status(404).json({ message: `Reseña con id ${reviewId} no encontrada.` });
+    if (error.message == "USER_NOT_CREATOR") {
+      return res.status(403).json({ message: "Usted no tiene permiso para eliminar este sitio." });
     }
 
-    if (review.userId.toString() !== userId) {
-      return res.status(403).json({ message: "No tenés permiso para eliminar esta reseña. Unicamente quien la creo puede hacerlo" });
+    if (error.message == "SITE_DELETE_FAILED") { //esto no pasa nunca
+      return res.status(500).json({ message: "Error técnico al eliminar el sitio." });
     }
 
-    await deleteReview(siteId, reviewId);
-    res.status(200).json({ message: "Reseña eliminada correctamente." });
-
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la reseña: " + error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
-
-/* const deleteReviewController = async (req, res) => {
-  const siteId = req.params.id;
-  const reviewId = req.body.reviewId;
-
-  try {
-    await deleteReview(siteId, reviewId)
-    res.status(200).json({ message: "Reseña eliminada correctamente." });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la reseña: " + error });
-  }
-} */
 
 const postReviewSiteController = async (req, res) => {
   const siteId = req.params.id;
@@ -146,12 +126,84 @@ const postReviewSiteController = async (req, res) => {
 
   try {
     const createdReview = await addReview(site.id, reviewData, userId);
-
-    res.status(200).json(createdReview);
+    await cleanCache(userId);
+    return res.status(200).json({
+      message: "Reseña creada correctamente.",
+      review: createdReview
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error al crear la reseña: " + error });
-  };
-}
+    res.status(500).json({ message: "Error al crear la reseña: " + error.message });
+  }
+};
+
+const putReviewSiteController = async (req, res) => {
+  const siteId = req.params.id;
+  const reviewId = req.params.reviewId;
+  const { body } = req;
+  const { id } = req.user;
+
+  try {
+    const review = await updateSiteReview(siteId, reviewId, body, id);
+    await cleanCache(id);
+
+    return res.status(200).json({
+      message: `Reseña actualizada correctamente.`,
+      review,
+    });
+  } catch (error) {
+    if (error.message == "SITE_NOT_EXIST") {
+      return res.status(404).json({ message: "Sitio no encontrado." });
+    }
+    if (error.message == "REVIEW_NOT_EXIST") {
+      return res.status(404).json({ message: "Reseña no encontrada." });
+    }
+    if (error.message == "USER_NOT_CREATOR") {
+      return res.status(403).json({ message: "No tenés permiso para modificar esta reseña. Solo el creador puede hacerlo." });
+    }
+
+    return res.status(500).json({ message: "Error al actualizar la reseña: " + error.message });
+  }
+};
+
+const deleteReviewController = async (req, res) => {
+  const siteId = req.params.id;
+  const reviewId = req.params.reviewId;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+  if (!userId) {
+    return res.status(401).json({ message: "No autenticado." });
+  }
+
+  try {
+    const site = await getSiteById(siteId);
+    if (!site) {
+      return res.status(404).json({ message: `Sitio con id ${siteId} no encontrado.` });
+    }
+
+    const review = site.reviews.id(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: `Reseña con id ${reviewId} no encontrada.` });
+    }
+
+    //permite solo si es admin o si es el creador de la review
+    const esAdmin = userRole === "admin";
+    const esCreador = review.userId.toString() === userId;
+
+    if (!esAdmin && !esCreador) {
+      return res.status(403).json({
+        message: "No tenés permiso para eliminar esta reseña. Solo el creador o un administrador puede hacerlo.",
+      });
+    }
+
+    await deleteReview(siteId, reviewId);
+    await cleanCache(userId);
+    res.status(200).json({ message: "Reseña eliminada correctamente." });
+
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar la reseña: " + error.message });
+  }
+};
 
 module.exports = {
   getSitesController,
@@ -160,5 +212,6 @@ module.exports = {
   putSiteController,
   deleteSiteController,
   deleteReviewController,
-  postReviewSiteController
+  postReviewSiteController,
+  putReviewSiteController
 };
