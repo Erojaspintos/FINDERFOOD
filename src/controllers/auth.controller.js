@@ -58,4 +58,10 @@ const postAuthSignUp = async (req, res) => {
   }
 };
 
-module.exports = { postAuthLogin, postAuthSignUp, getUsersController };
+const postAuthLogOut = async (req, res) => {
+  
+  res.json({ token: null });
+  return;
+};
+
+module.exports = { postAuthLogin, postAuthSignUp, getUsersController, postAuthLogOut};

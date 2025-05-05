@@ -8,8 +8,11 @@ const { getSites,
 
 const getSitesController = async (req, res) => {
   const filter = req.query;
+  const userId = req.user.id;
+
+  console.log("USERID EN GETSITECONTROLLER: "+userId)
   try {
-    const sites = await getSites(filter);
+    const sites = await getSites(filter, userId);
     res.status(200).json(sites);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los Sitios: " + error });
@@ -50,24 +53,24 @@ const putSiteController = async (req, res) => {
   try {
     const site = await updateSite(siteId, body);
     if (!site) {
-      return res.status(404).json({ message: `Sitio con id ${siteId} no encontrado.` }); //mismo caso que el get del sitio null
+      return res.status(404).json({ message: `Sitio con ID ${siteId} no encontrado.` }); 
     }
     res.status(200).json({message: `Sitio con id ${siteId} actualizado correctamente.` , site: site});
+    
     return;
   } catch (error) {
-    res.status(500).json({ message: "Error al modificar el sitio: " + error });
+      res.status(500).json({ message: error });
   }
 }
 
 const deleteSiteController = async (req, res) => {
   const siteId = req.params.id;
+  const userId = req.user?.id;
+
   //validar quien va a poder eliminar, yo creo que el usuario que lo creó o un usuario admin?
   try {
-    const site = await deleteSite(siteId);
-    console.log(site.body);
-    if (!site) {
-      return res.status(404).json({ message: `Sitio con id ${siteId} no encontrado.` }); // site null
-    }
+    site = await deleteSite(siteId, userId);
+
     res.status(200).json({
       message: "Sitio eliminado correctamente",
     });

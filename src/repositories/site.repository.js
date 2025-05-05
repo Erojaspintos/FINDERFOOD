@@ -23,28 +23,32 @@ const _getSitesRedisKey = (userId, filter) => `userId: ${userId}-sites:${JSON.st
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
+    console.log("key: "+sitesRedisKey)
     let sites = await redisClient.get(sitesRedisKey);
+
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
 
+    if (filter.name)
+        mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
+
     if (filter.startLat && filter.startLong) {
-    mongoFilter.location =  {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [filter.startLong, filter.startLat],
-          },
-          $maxDistance: maxDistance
-        }
-      };
+        mongoFilter.location = {
+            $near: {
+                $geometry: {
+                    type: "Point",
+                    coordinates: [filter.startLong, filter.startLat],
+                },
+                $maxDistance: maxDistance
+            }
+        };
     }
-      if (!sites) {
+    if (!sites) {
         console.log("[Reading from Mongo]");
         sites = await Site.find(mongoFilter);
-        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 30 }); // ese 60 es pa que dure un mintuo
-    } else{
+        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 600 }); // ese 60 es pa que dure un mintuo
+    } else {
         console.log("[Reading from Redis]");
-        sites = JSON.parse(sites);
     }
     return sites;
 };
@@ -57,7 +61,7 @@ const buildMongoFilter = (filter) => {
             mongoFilter[key] = filter[key];
         }
     }
-    
+
     return mongoFilter;
 };
 
@@ -83,9 +87,20 @@ const createSite = async (model, userId) => {
     await newSite.save();
 }
 
+const { Types } = require("mongoose");
+
 const deleteSite = async (id, userId) => {
-    await Site.deleteOne({ _id: id, userId: userId });
-}
+  console.log(id + " L 91 siterepository "+userId);
+
+  if (!Types.ObjectId.isValid(id)) {
+    throw new Error("ID de sitio inválido");
+  }
+  const result = await Site.deleteOne({ _id: id , userId: userId});
+
+  if (result.deletedCount == 0) {
+    throw new Error("No se encontró ningún sitio con esos datos");
+  }
+};
 
 const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
@@ -105,17 +120,14 @@ const addReview = async (siteId, model, userId) => {
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
     if (site) {
-
-        //revisar con Eze, updated no hace nada
-       // const updated = await Site.updateOne({ _id: siteId }, model);
-        //return { ...site.toObject(), ...model };
-
-        await Site.updateOne({ _id: siteId }, model);
-        return getSiteById(siteId);
-
-    } else {
-        return null;
+        const updated = await Site.updateOne({ _id: siteId }, model);
+        if (updated.modifiedCount > 0)
+            return { ...site.toObject(), ...model };
+        else
+            throw new Error("No se realizaron cambios en el sitio.");
     }
+    else
+        return null;
 };
 
 const deleteReview = async (siteId, reviewId) => {

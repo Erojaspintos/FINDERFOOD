@@ -18,7 +18,6 @@ const authMiddleWare = (req, res, next) => {
     catch (error){
       res.status(403).json({message: "Token inválido"});
     }
-  
 };
 
 module.exports = authMiddleWare;
