@@ -38,6 +38,7 @@ const postAuthLogin = async (req, res) => {
     }
   );
 
+  console.log("LOGINNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
   res.json({ token: token });
 };
 

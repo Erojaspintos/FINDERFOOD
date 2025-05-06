@@ -13,6 +13,7 @@ const { getSites,
 const { cleanCache } = require("../services/redis.service");
 
 const getSitesController = async (req, res) => {
+  console.log("GET SITES CONTROLLLLLLLLLLLLLLLLLLLER")
   const filter = req.query;
   let userId = '0'; // por defecto público
 
