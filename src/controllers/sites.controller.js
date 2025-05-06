@@ -14,24 +14,22 @@ const { cleanCache } = require("../services/redis.service");
 
 const getSitesController = async (req, res) => {
   const filter = req.query;
-  const token = req.headers["authorization"];
-  let userId;
-  if(!token){
-    userId = '0';
-  }
-  else{
-    const verified = jwt.verify(token, AUTH_SECRET_KEY);
-    userId = verified.id;
-  }
+  let userId = '0'; // por defecto público
 
   try {
+    const token = req.headers["authorization"];
+    if (token) {
+      const verified = jwt.verify(token, AUTH_SECRET_KEY);
+      userId = verified.id;
+    }
+
     const sites = await getSites(filter, userId);
     res.status(200).json(sites);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener los Sitios: " + error });
+    console.error("Error en getSitesController:", error);
+    res.status(500).json({ message: "Error al obtener los Sitios" });
   }
 };
-
 const getSiteController = async (req, res) => {
   const siteId = req.params.id;
   try {
