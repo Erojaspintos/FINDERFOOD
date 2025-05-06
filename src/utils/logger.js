@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-
+/*
 const logRequest = (req) => {
   const now = new Date();
   const [date] = now.toISOString().split("T");
@@ -18,6 +18,14 @@ const logRequest = (req) => {
   fs.appendFile(logFile, logMessage, (err) => {
     if (err) console.error("Error writing log: ", err);
   });
+};
+*/
+const logRequest = (req) => {
+
+  const now = new Date().toISOString();
+
+  console.log(`[${now}] METHOD: ${req.method} ${req.url}`);
+
 };
 
 module.exports = logRequest;
