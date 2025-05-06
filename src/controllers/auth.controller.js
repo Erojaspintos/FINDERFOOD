@@ -38,7 +38,6 @@ const postAuthLogin = async (req, res) => {
     }
   );
 
-  console.log("LOGINNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
   res.json({ token: token });
 };
 
@@ -61,7 +60,8 @@ const postAuthSignUp = async (req, res) => {
 
 const postAuthLogOut = async (req, res) => {
   
-  res.status(200).json({ message: "Sesión cerrada exitosamente" });
+  res.json({ token: null });
+  return;
 };
 
 module.exports = { postAuthLogin, postAuthSignUp, getUsersController, postAuthLogOut};

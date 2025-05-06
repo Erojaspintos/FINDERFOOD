@@ -26,7 +26,7 @@ const connectMongoDB = require("./models/schemas/mongo.client");
 
 // Middlewares
 app.use(express.json());
-//app.use(loggerMiddleWare);
+app.use(loggerMiddleWare);
 app.use(morgan("dev"));
 app.use(cors());
 app.use(sanitizerMiddleware);
@@ -42,11 +42,6 @@ app.use(authMiddleWare);
 // Private
 app.use("/v1", privateRouter);
 
-
 const PORT = process.env.PORT;
-/*
-app.listen(PORT, () => {
-  console.log(`Listen & serve PORT: ${PORT}!`);
-});
-*/
+
 module.exports = app;

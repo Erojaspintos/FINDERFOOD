@@ -17,8 +17,8 @@ const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.str
 
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
-    
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
+    console.log("key: " + sitesRedisKey)
     let sites = await redisClient.get(sitesRedisKey);
 
     const mongoFilter = buildMongoFilter(filter);

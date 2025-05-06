@@ -1,6 +1,3 @@
-const jwt = require("jsonwebtoken");
-const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
-
 const { getSites,
   getSiteById,
   addReview,
@@ -13,24 +10,18 @@ const { getSites,
 const { cleanCache } = require("../services/redis.service");
 
 const getSitesController = async (req, res) => {
-  console.log("GET SITES CONTROLLLLLLLLLLLLLLLLLLLER")
   const filter = req.query;
-  let userId = '0'; // por defecto público
+  const userId = req.user.id;
 
+  console.log("USERID EN GETSITECONTROLLER: " + userId)
   try {
-    const token = req.headers["authorization"];
-    if (token) {
-      const verified = jwt.verify(token, AUTH_SECRET_KEY);
-      userId = verified.id;
-    }
-
     const sites = await getSites(filter, userId);
     res.status(200).json(sites);
   } catch (error) {
-    console.error("Error en getSitesController:", error);
-    res.status(500).json({ message: "Error al obtener los Sitios" });
+    res.status(500).json({ message: "Error al obtener los Sitios: " + error });
   }
 };
+
 const getSiteController = async (req, res) => {
   const siteId = req.params.id;
   try {
