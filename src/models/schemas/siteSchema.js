@@ -1,15 +1,39 @@
-const Joi = require("joi");
+const mongoose = require("mongoose");
+const reviewSchema = require("../schemas/reviewSchema");
+const siteSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  country: { type: String, required: true },
+  state: { type: String, required: true },
+  city: { type: String, required: true },
+  address: { type: String },
+  description: { type: String, required: true },
+  type: { type: Number, required: true }, // 1 lugar donde ir a comer, 2 lugar donde ir a comprar
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-// name, country, state, city, address, latitude, longitude, desciption
-const siteSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-  country: Joi.string().min(3).max(20).required(),
-  state: Joi.string().min(3).max(20).required(),
-  city: Joi.string().min(3).max(20).required(),
-  address: Joi.string().min(3).max(50).required(),
-  description: Joi.string().required().min(10).max(300),
-  type: Joi.number().required(),
-  reviews: Joi.array().items(Joi.string())
+  // Agregás este campo para búsquedas geoespaciales
+  location: {
+    type: {
+      type: String, // "Point"
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number], // [longitud, latitud]
+      required: true
+    }
+  },
+
+  // reviews
+  reviews: {
+    type: [reviewSchema],
+    default: []
+  }
 });
+
+// 💡 Este es el índice geoespacial obligatorio
+siteSchema.index({ location: '2dsphere' });
+
 
 module.exports = siteSchema;

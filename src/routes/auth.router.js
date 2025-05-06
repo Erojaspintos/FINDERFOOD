@@ -1,17 +1,21 @@
 const express = require("express");
 const authRouter = express.Router();
-const payloadMiddleWare = require("../middlewares/paylod.middleware");
+const payloadMiddleWare = require("../middlewares/payload.middleware");
+const authMiddleware = require("../middlewares/auth.middleware");
+const roleMiddleware = require("../middlewares/role.middleware");
 
 const {
     postAuthLogin,
     postAuthSignUp,
     getUsersController,
+    postAuthLogOut
 } = require("../controllers/auth.controller");
 
-const { signUpSchema, loginSchema } = require("../models/schemas/userSchema");
+const { loginSchema, signUpSchema } = require("./validations/user.validation");
 
-authRouter.get("/users", getUsersController);
-authRouter.post("/login", payloadMiddleWare(loginSchema), postAuthLogin);
 authRouter.post("/signup", payloadMiddleWare(signUpSchema), postAuthSignUp);
+authRouter.post("/login", payloadMiddleWare(loginSchema), postAuthLogin);
+authRouter.get("/users", authMiddleware, roleMiddleware("admin"), getUsersController);
+authRouter.post("/logout", authMiddleware, postAuthLogOut);
 
 module.exports = authRouter;

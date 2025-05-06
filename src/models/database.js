@@ -1,4 +1,8 @@
 const dayjs = require('dayjs');
+const siteSchema = require("../models/schemas/siteSchema")
+const mongoose = require("mongoose");
+
+//const Site = mongoose.model("Site", siteSchema);
 
 const sites = [
   {
@@ -88,22 +92,6 @@ const deleteSite = (id) => {
   if (indexToBeDeleted >= 0) {
     sites.splice(indexToBeDeleted, 1);
   }
-}
-
-const findReviewById = (site, reviewId) => {
-  console.log(site.reviews);
-  console.log("reviewId " + reviewId);
-  const review = site.reviews.find(s => s.id == reviewId);
-  return review;
-};
-
-const deleteReview = (siteId, reviewId) => {
-  const index = findByIndex(siteId);
-  const reviewIndex = sites.findIndex(s => s.id == reviewId);
-  console.log(siteId + "--" + reviewId);
-
-  if (index >= 0)
-    sites[index].reviews.splice(reviewIndex, 1);
 }
 
 const addReview = (siteId, body, userId) => {

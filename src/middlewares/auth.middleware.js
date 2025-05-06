@@ -5,7 +5,7 @@ const authMiddleWare = (req, res, next) => {
   const token = req.headers["authorization"];
 
   if (!token ) 
-    res.status(401).json({
+    return res.status(401).json({
       message: "Unauthorized - No token provided",
     });
     
@@ -18,7 +18,6 @@ const authMiddleWare = (req, res, next) => {
     catch (error){
       res.status(403).json({message: "Token inválido"});
     }
-  
 };
 
 module.exports = authMiddleWare;

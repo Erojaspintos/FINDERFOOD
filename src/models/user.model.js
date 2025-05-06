@@ -1,5 +1,12 @@
 const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
+const userSchema = require("../models/schemas/userSchema");
 
+const User = mongoose.model("User", userSchema); 
+
+module.exports = User;
+
+/*
 const users = [
   {
     id: 1,
@@ -19,7 +26,6 @@ const users = [
   },
 ];
 
-const getUsers = () => users;
 
 const findUser = (name) => {
   const user = users.find((u) => u.name == name);
@@ -56,5 +62,7 @@ const saveUser = async (name, email, password, foodPreferences) => {
   users.push(newUser);
   return newUser.id;
 };
+*/
 
-module.exports = { saveUser, findUser, findUserByEmail, isValidPassword, getUsers };
+
+//module.exports = { saveUser, findUser, findUserByEmail, isValidPassword, getUsers };
