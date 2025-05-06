@@ -1,3 +1,6 @@
+const jwt = require("jsonwebtoken");
+const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
+
 const { getSites,
   getSiteById,
   addReview,
@@ -11,9 +14,16 @@ const { cleanCache } = require("../services/redis.service");
 
 const getSitesController = async (req, res) => {
   const filter = req.query;
-  const userId = req.user.id;
+  const token = req.headers["authorization"];
+  let userId;
+  if(!token){
+    userId = '0';
+  }
+  else{
+    const verified = jwt.verify(token, AUTH_SECRET_KEY);
+    userId = verified.id;
+  }
 
-  console.log("USERID EN GETSITECONTROLLER: " + userId)
   try {
     const sites = await getSites(filter, userId);
     res.status(200).json(sites);
