@@ -4,8 +4,12 @@ const logger = require("../utils/logger");
 const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
 const authMiddleWare = (req, res, next) => {
-  const token = req.headers["authorization"];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : authHeader;
 
+  console.log("Token" + token);
   if (!token) {
     logger.sentryError({ message: "Unauthorized - No token provided" });
     return res

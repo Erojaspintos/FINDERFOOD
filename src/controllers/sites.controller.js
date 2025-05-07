@@ -24,7 +24,10 @@ const getSitesController = async (req, res) => {
     }
  
     const sites = await getSites(filter, userId);
-    res.status(200).json(sites);
+    res.status(200).json({
+      message:"Lista de sitios encontrados",
+      data: sites}
+    );
   } catch (error) {
     console.error("Error en getSitesController:", error);
     res.status(500).json({ message: "Error al obtener los Sitios" });
