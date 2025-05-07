@@ -8,7 +8,6 @@ const {
     postAuthLogin,
     postAuthSignUp,
     getUsersController,
-    postAuthLogOut
 } = require("../controllers/auth.controller");
 
 const { loginSchema, signUpSchema } = require("./validations/user.validation");
@@ -16,6 +15,5 @@ const { loginSchema, signUpSchema } = require("./validations/user.validation");
 authRouter.post("/signup", payloadMiddleWare(signUpSchema), postAuthSignUp);
 authRouter.post("/login", payloadMiddleWare(loginSchema), postAuthLogin);
 authRouter.get("/users", authMiddleware, roleMiddleware("admin"), getUsersController);
-authRouter.post("/logout", authMiddleware, postAuthLogOut);
 
 module.exports = authRouter;

@@ -9,11 +9,19 @@ const siteUpdateSchema = new mongoose.Schema({
     address: { type: String },
     description: { type: String },
     type: { type: Number },
-    latitude: { type: Number },
-    longitude: { type: Number },
     reviews: {
         type: [reviewSchema], default: []
-    }
+    },
+    // agregamos este campo para busquedas geoespaciales
+    location: {
+        type: {
+            type: String, 
+            enum: ['Point'],
+        },
+        coordinates: {
+            type: [Number], // [longitud, latitud]
+        }
+    },
 });
 
 module.exports = siteUpdateSchema;

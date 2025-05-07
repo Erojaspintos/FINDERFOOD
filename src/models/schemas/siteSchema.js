@@ -8,8 +8,6 @@ const siteSchema = new mongoose.Schema({
   address: { type: String },
   description: { type: String, required: true },
   type: { type: Number, required: true }, // 1 lugar donde ir a comer, 2 lugar donde ir a comprar
-  latitude: { type: Number, required: true },
-  longitude: { type: Number, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
   // Agregás este campo para búsquedas geoespaciales
