@@ -18,15 +18,15 @@ const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.str
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
    
-    const sitesRedisKey = _getSitesRedisKey(userId, filter);
     let sites = await redisClient.get(sitesRedisKey);
- 
+    
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
  
     if (filter.name)
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
  
+    console.log("max distance: "+maxDistance)
     if (filter.startLat && filter.startLong) {
         mongoFilter.location = {
             $near: {
@@ -39,10 +39,11 @@ const getSites = async (filter, userId) => {
         };
     }
 
-  // Extraer y validar limit y skip
-  const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT; 
-  const skip = parseInt(filter.skip) || process.env.SKIP_DEFAULT;
-
+    // Extraer y validar limit y skip
+    const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT; 
+    const skip = parseInt(filter.skip) || process.env.SKIP_DEFAULT;
+    
+    const sitesRedisKey = _getSitesRedisKey(userId, filter);
     if (!sites) {
         console.log("[Reading from Mongo]");
         sites = await Site.find(mongoFilter)
@@ -71,8 +72,15 @@ const createSite = async (model, userId) => {
  
     const siteExiste = await Site.findOne({
         name: model.name,
-        latitude: model.latitude,
-        longitude: model.longitude
+        location : {
+            $near: {
+                $geometry: {
+                    type: "Point",
+                    coordinates: [model.longitude, model.latitude],
+                },
+                $maxDistance: process.env.MAX_DISTANCE_DEFAULT
+            }
+        }
     });
  
     if (siteExiste) {
@@ -88,8 +96,6 @@ const createSite = async (model, userId) => {
         description: model.description,
         type: model.type,
         userId: userId,
-        latitude: model.latitude,
-        longitude: model.longitude,
         location: {
             type: "Point",
             coordinates: [model.longitude, model.latitude]
@@ -102,6 +108,12 @@ const createSite = async (model, userId) => {
  
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
+
+    model.location = {
+        type: "Point",
+        coordinates: [model.longitude, model.latitude]
+    };
+    
     if (site) {
         const updated = await Site.updateOne({ _id: siteId }, model);
         if (updated.modifiedCount > 0)
