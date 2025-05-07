@@ -38,9 +38,16 @@ const getSites = async (filter, userId) => {
             }
         };
     }
+
+  // Extraer y validar limit y skip
+  const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT; 
+  const skip = parseInt(filter.skip) || process.env.SKIP_DEFAULT;
+
     if (!sites) {
         console.log("[Reading from Mongo]");
-        sites = await Site.find(mongoFilter);
+        sites = await Site.find(mongoFilter)
+        .skip(skip)
+        .limit(limit);
         await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 600 }); // ese 60 es pa que dure un mintuo
     } else {
         console.log("[Reading from Redis]");
