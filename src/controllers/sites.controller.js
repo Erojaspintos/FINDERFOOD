@@ -203,7 +203,7 @@ const deleteReviewController = async (req, res) => {
  
     if (!esAdmin && !esCreador) {
       return res.status(403).json({
-        message: "No tenés permiso para eliminar esta reseña. Solo el creador o un administrador puede hacerlo.",
+        message: "No tenés permiso para eliminar esta reseña.",
       });
     }
  

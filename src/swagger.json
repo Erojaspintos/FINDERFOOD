@@ -294,7 +294,6 @@
         ],
         "responses": {
           "200": {
-            "description": "Sitio encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -304,10 +303,15 @@
             }
           },
           "404": {
-            "description": "No encontrado"
+            "description": "No encontrado con ID 123 no encontrado"
+          },
+          "500": {
+            "description": "Error al obtener el sitio"
           }
         }
-      },
+      }
+    },
+    "v1/sites/{id}": {
       "put": {
         "summary": "Actualizar sitio",
         "security": [
@@ -337,10 +341,13 @@
         },
         "responses": {
           "200": {
-            "description": "Sitio actualizado"
+            "description": "Sitio con id 134 actualizado correctamente."
           },
           "404": {
-            "description": "No encontrado"
+            "description": "Sitio con ID 1234 no encontrado"
+          },
+          "500": {
+            "description": "Error"
           }
         }
       },
@@ -374,7 +381,7 @@
         }
       }
     },
-    "/sites/{id}/reviews": {
+    "/v1/sites/{id}/reviews": {
       "post": {
         "summary": "Agregar reseña al sitio",
         "security": [
@@ -407,15 +414,18 @@
             "description": "Reseña creada"
           },
           "404": {
-            "description": "Sitio no encontrado"
+            "description": "El sitio con ID 1223 no encontrado"
           },
           "409": {
-            "description": "Reseña ya existente"
+            "description": "Usted ya realizó una reseña para este sitio"
+          },
+          "500": {
+            "description": "Error al crear la reseña"
           }
         }
       }
     },
-    "/sites/{id}/reviews/{reviewId}": {
+    "/v1/sites/{id}/reviews/{reviewId}": {
       "put": {
         "summary": "Editar reseña",
         "security": [
@@ -453,13 +463,16 @@
         },
         "responses": {
           "200": {
-            "description": "Reseña actualizada"
+            "description": "Reseña actualizada correctamente."
           },
           "403": {
-            "description": "No autorizado"
+            "description": "No tenés permiso para modificar esta reseña. Solo el creador puede hacerlo."
           },
           "404": {
-            "description": "No encontrada"
+            "description": "Sitio no encontrado"
+          },
+          "500": {
+            "description": "Error al actualizar la reseña"
           }
         }
       },
@@ -490,18 +503,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Reseña eliminada"
+            "description": "Reseña eliminada correctamente"
           },
           "403": {
-            "description": "Sin permisos"
+            "description": "No tenés permiso para eliminar esta reseña"
           },
           "404": {
-            "description": "No encontrada"
+            "description": "No con ID 1234 no encontrado"
+          },
+          "405": {
+            "description": "Reseña con ID 1234 no encontrado"
           }
         }
       }
     },
-    "/users/register": {
+    "/v1/auth/signup": {
       "post": {
         "summary": "Registro de usuario",
         "requestBody": {
@@ -516,15 +532,18 @@
         },
         "responses": {
           "201": {
-            "description": "Usuario registrado"
+            "description": "Usuario creado exitorsamente"
           },
           "400": {
-            "description": "Datos inválidos"
+            "description": "Email de usuario ya en uso"
+          },
+          "500": {
+            "description": "Ha ocurrido un error registrando el usuario"
           }
         }
       }
     },
-    "/users/login": {
+    "/v1/auth/login": {
       "post": {
         "summary": "Login de usuario",
         "requestBody": {
@@ -554,6 +573,9 @@
         "responses": {
           "200": {
             "description": "Login exitoso con token"
+          },
+          "400": {
+            "description": "Credenciales inválidas"
           },
           "401": {
             "description": "Credenciales inválidas"
