@@ -1,6 +1,5 @@
 const Joi = require("joi");
 
-// name, country, state, city, address, latitude, longitude, desciption
 const siteSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   country: Joi.string().min(3).max(20).required(),
@@ -12,9 +11,6 @@ const siteSchema = Joi.object({
   reviews: Joi.array().items(Joi.string()),
   latitude: Joi.number().required(),
   longitude: Joi.number().required()
-
-  //foodPreferences
-
 });
 
 module.exports = siteSchema;
