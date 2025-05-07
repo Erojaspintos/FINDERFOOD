@@ -3,8 +3,6 @@ const router = express.Router();
 
 //OBLIGATORIO 
 const {
-  getSitesController,
-  getSiteController,
   postSiteController,
   putSiteController,
   deleteSiteController,
@@ -25,8 +23,6 @@ const siteUpdateSchema = require("../routes/validations/update.site");
 // Private Routes obligatorio
 
 //SITES
-router.get("/sites", getSitesController);
-router.get("/sites/:id", getSiteController);
 router.post("/sites", roleMiddleware("usuario_restaurant", "usuario_vendedor", "usuario_consumidor"), payloadMiddleWare(siteSchema), postSiteController);
 router.put("/sites/:id", payloadMiddleWare(siteUpdateSchema), putSiteController);
 router.delete("/sites/:id", deleteSiteController);

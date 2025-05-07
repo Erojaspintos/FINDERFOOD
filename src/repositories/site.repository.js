@@ -3,7 +3,7 @@ const { connectToRedis } = require("../services/redis.service");
 const dayjs = require("dayjs");
 const siteUpdateSchema = require('../models/schemas/siteUpdateSchema');
 const { Types } = require("mongoose");
-
+ 
 const getSiteById = async (id) => {
     try {
         let site = await Site.findOne({ _id: id });
@@ -12,21 +12,21 @@ const getSiteById = async (id) => {
         return null;
     }
 };
-
+ 
 const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.stringify(filter)}`;
-
+ 
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
+   
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
-    console.log("key: " + sitesRedisKey)
     let sites = await redisClient.get(sitesRedisKey);
-
+ 
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
-
+ 
     if (filter.name)
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
-
+ 
     if (filter.startLat && filter.startLong) {
         mongoFilter.location = {
             $near: {
@@ -47,7 +47,7 @@ const getSites = async (filter, userId) => {
     }
     return sites;
 };
-
+ 
 const buildMongoFilter = (filter) => {
     const allowedFields = Object.keys(siteUpdateSchema.paths).filter(key => key !== '_id' && key !== '__v');
     const mongoFilter = {};
@@ -56,22 +56,22 @@ const buildMongoFilter = (filter) => {
             mongoFilter[key] = filter[key];
         }
     }
-
+ 
     return mongoFilter;
 };
-
+ 
 const createSite = async (model, userId) => {
-
+ 
     const siteExiste = await Site.findOne({
         name: model.name,
         latitude: model.latitude,
         longitude: model.longitude
     });
-
+ 
     if (siteExiste) {
         throw new Error("SITE_ALREADY_EXISTS");
     }
-
+ 
     const newSite = new Site({
         name: model.name,
         country: model.country,
@@ -89,10 +89,10 @@ const createSite = async (model, userId) => {
         },
         reviews: []
     })
-
+ 
     await newSite.save();
 };
-
+ 
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
     if (site) {
@@ -105,39 +105,39 @@ const updateSite = async (siteId, model) => {
     else
         return null;
 };
-
+ 
 const deleteSite = async (id, userId, userRole) => {
   if (!Types.ObjectId.isValid(id)) {
     throw new Error("El ID de sitio es inválido.");
   }
-
+ 
   const site = await Site.findOne({ _id: id });
-
+ 
   if (!site) {
     throw new Error("SITE_NOT_EXIST");
   }
-
+ 
   const isCreator = site.userId.toString() === userId.toString();
   const isAdmin = userRole === "admin";
-
+ 
   if (!isCreator && !isAdmin) {
     throw new Error("USER_NOT_CREATOR");
   }
-
+ 
   const result = await Site.deleteOne({ _id: id });
-
+ 
   if (result.deletedCount === 0) {
     throw new Error("SITE_DELETE_FAILED");
   }
 };
-
-
+ 
+ 
 const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const site = await getSiteById(siteId);
-
+ 
     if (!site) throw new Error("SITE_NOT_EXIST");
-
+ 
     site.reviews.push({
         comment: model.comment,
         stars: model.stars,
@@ -146,29 +146,29 @@ const addReview = async (siteId, model, userId) => {
     });
     await site.save();
 };
-
+ 
 const deleteReview = async (siteId, reviewId) => {
     const site = await getSiteById(siteId);
     if (site == null)
         throw new Error(`Sitio con id ${siteId} no encontrado.`);
-
+ 
     const review = site.reviews.id(reviewId); // o usar .find(...) como opción 2
-
+ 
     if (!review)
         throw new Error(`Review con id ${reviewId} no encontrada en el sitio ${siteId}.`);
-
+ 
     const result = await Site.updateOne(
         { _id: siteId },
         { $pull: { reviews: { _id: reviewId } } }
     );
-
+ 
     if (result.modifiedCount === 0) {
         throw new Error(`No se pudo eliminar la review con id ${reviewId}.`);
     }
 };
-
+ 
 const updateSiteReview = async (siteId, reviewId, model, userId) => {
-
+ 
     const site = await getSiteById(siteId);
     if (!site) {
         throw new Error("SITE_NOT_EXIST");
@@ -185,7 +185,7 @@ const updateSiteReview = async (siteId, reviewId, model, userId) => {
     await site.save();
     return review;
 };
-
+ 
 module.exports = {
     getSites,
     getSiteById,

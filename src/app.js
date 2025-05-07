@@ -7,7 +7,7 @@ const authRouter = require("./routes/auth.router");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
 
-const loggerMiddleWare = require("./middlewares/logger.middleware");
+//const loggerMiddleWare = require("./middlewares/logger.middleware");
 const authMiddleWare = require("./middlewares/auth.middleware");
 const sanitizerMiddleware = require("./middlewares/sanitizer.middleware");
 const privateRouter = require("./routes/private.router");
@@ -26,7 +26,7 @@ const connectMongoDB = require("./models/schemas/mongo.client");
 
 // Middlewares
 app.use(express.json());
-app.use(loggerMiddleWare);
+//app.use(loggerMiddleWare);
 app.use(morgan("dev"));
 app.use(cors());
 app.use(sanitizerMiddleware);
