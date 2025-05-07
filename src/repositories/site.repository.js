@@ -18,6 +18,7 @@ const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.str
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
    
+    const sitesRedisKey = _getSitesRedisKey(userId, filter);
     let sites = await redisClient.get(sitesRedisKey);
     
     const mongoFilter = buildMongoFilter(filter);
@@ -43,7 +44,6 @@ const getSites = async (filter, userId) => {
     const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT; 
     const skip = parseInt(filter.skip) || process.env.SKIP_DEFAULT;
     
-    const sitesRedisKey = _getSitesRedisKey(userId, filter);
     if (!sites) {
         console.log("[Reading from Mongo]");
         sites = await Site.find(mongoFilter)
