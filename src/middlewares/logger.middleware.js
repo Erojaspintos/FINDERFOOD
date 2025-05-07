@@ -6,7 +6,6 @@ const logRequest = require("../utils/logger");
  * @param {*} next
  */
 const loggerMiddleWare = (req, res, next) => {
-  logRequest(req);
   next();
 };
 
