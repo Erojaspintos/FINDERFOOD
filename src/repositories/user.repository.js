@@ -11,7 +11,6 @@ const findUser = async (email) => {
 
 const saveUser = async (name, email, password, foodPreferences, role) => {
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("HOA" + foodPreferences)
     const newUser = new User({
         name: name,
         email: email,

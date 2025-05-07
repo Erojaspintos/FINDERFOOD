@@ -3,7 +3,8 @@ const { connectToRedis } = require("../services/redis.service");
 const dayjs = require("dayjs");
 const siteUpdateSchema = require('../models/schemas/siteUpdateSchema');
 const { Types } = require("mongoose");
- 
+const config = require('../../config');
+
 const getSiteById = async (id) => {
     try {
         let site = await Site.findOne({ _id: id });
@@ -22,12 +23,11 @@ const getSites = async (filter, userId) => {
     let sites = await redisClient.get(sitesRedisKey);
     
     const mongoFilter = buildMongoFilter(filter);
-    const maxDistance = filter.maxDistance || process.env.MAX_DISTANCE_DEFAULT;
+    const maxDistance = filter.maxDistance || config.maxDistance;
  
     if (filter.name)
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
  
-    console.log("max distance: "+maxDistance)
     if (filter.startLat && filter.startLong) {
         mongoFilter.location = {
             $near: {
@@ -69,7 +69,6 @@ const buildMongoFilter = (filter) => {
 };
  
 const createSite = async (model, userId) => {
- 
     const siteExiste = await Site.findOne({
         name: model.name,
         location : {
@@ -78,7 +77,7 @@ const createSite = async (model, userId) => {
                     type: "Point",
                     coordinates: [model.longitude, model.latitude],
                 },
-                $maxDistance: process.env.MAX_DISTANCE_DEFAULT
+                $maxDistance: config.maxDistance
             }
         }
     });
@@ -136,20 +135,8 @@ const deleteSite = async (id, userId, userRole) => {
     throw new Error("SITE_NOT_EXIST");
   }
  
-  const isCreator = site.userId.toString() === userId.toString();
-  const isAdmin = userRole === "admin";
- 
-  if (!isCreator && !isAdmin) {
-    throw new Error("USER_NOT_CREATOR");
-  }
- 
   const result = await Site.deleteOne({ _id: id });
- 
-  if (result.deletedCount === 0) {
-    throw new Error("SITE_DELETE_FAILED");
-  }
 };
- 
  
 const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
@@ -181,9 +168,8 @@ const deleteReview = async (siteId, reviewId) => {
         { $pull: { reviews: { _id: reviewId } } }
     );
  
-    if (result.modifiedCount === 0) {
+    if (result.modifiedCount === 0)
         throw new Error(`No se pudo eliminar la review con id ${reviewId}.`);
-    }
 };
  
 const updateSiteReview = async (siteId, reviewId, model, userId) => {

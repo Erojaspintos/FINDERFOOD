@@ -1,6 +1,5 @@
 const Joi = require("joi");
 
-// name, country, state, city, address, latitude, longitude, desciption
 const updateSiteSchema = Joi.object({
   name: Joi.string().min(3).max(20),
   country: Joi.string().min(3).max(20),
@@ -12,9 +11,6 @@ const updateSiteSchema = Joi.object({
   reviews: Joi.array().items(Joi.string()),
   latitude: Joi.number(),
   longitude: Joi.number()
-
-  //foodPreferences
-
 });
 
 module.exports = updateSiteSchema;
