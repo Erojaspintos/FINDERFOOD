@@ -26,7 +26,7 @@ const siteSchema = new mongoose.Schema({
     default: []
   },
   images: {
-    type: String,
+    type: [String],
     default: []
   }
 });
