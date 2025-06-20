@@ -51,11 +51,12 @@ const postSiteController = async (req, res) => {
   const { id } = req.user;
  
   try {
-    await createSite(body, id);
+    const sitioCreado = await createSite(body, id);
     await cleanCache(id);
  
     res.status(201).json({
       message: "Sitio creado correctamente",
+      site: sitioCreado
     });
   } catch (error) {
  
