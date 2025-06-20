@@ -15,17 +15,17 @@ const siteUpdateSchema = new mongoose.Schema({
     // agregamos este campo para busquedas geoespaciales
     location: {
         type: {
-            type: String, 
+            type: String,
             enum: ['Point'],
         },
         coordinates: {
             type: [Number], // [longitud, latitud]
         }
     },
-      images: {
-    type: String,
-    default: []
-  }
+    images: {
+        type: [String],
+        default: []
+    }
 });
 
 module.exports = siteUpdateSchema;
