@@ -102,7 +102,7 @@ const createSite = async (model, userId) => {
         reviews: []
     })
  
-    await newSite.save();
+   return await newSite.save();
 };
  
 const updateSite = async (siteId, model) => {
