@@ -99,7 +99,8 @@ const createSite = async (model, userId) => {
             type: "Point",
             coordinates: [model.longitude, model.latitude]
         },
-        reviews: []
+        reviews: [],
+        images: model.images
     })
  
    return await newSite.save();
@@ -148,7 +149,8 @@ const addReview = async (siteId, model, userId) => {
         comment: model.comment,
         stars: model.stars,
         userId: userId,
-        creationDate: creationDate
+        creationDate: creationDate,
+        images : model.images
     });
     await site.save();
 };
@@ -187,6 +189,8 @@ const updateSiteReview = async (siteId, reviewId, model, userId) => {
     }
     review.comment = model.comment;
     review.stars = model.stars;
+    review.images = [...model.images];
+
     await site.save();
     return review;
 };

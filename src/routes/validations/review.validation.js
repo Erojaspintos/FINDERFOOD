@@ -6,4 +6,4 @@ const reviewSchema = Joi.object({
   images: Joi.array().items(Joi.string())
 });
 
-module.exports = {reviewSchema};
+module.exports = { reviewSchema };
