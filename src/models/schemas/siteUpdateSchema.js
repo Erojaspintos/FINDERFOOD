@@ -22,6 +22,10 @@ const siteUpdateSchema = new mongoose.Schema({
             type: [Number], // [longitud, latitud]
         }
     },
+      images: {
+    type: String,
+    default: []
+  }
 });
 
 module.exports = siteUpdateSchema;

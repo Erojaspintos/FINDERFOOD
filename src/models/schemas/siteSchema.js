@@ -21,9 +21,12 @@ const siteSchema = new mongoose.Schema({
       required: true
     }
   },
-
   reviews: {
     type: [reviewSchema],
+    default: []
+  },
+  images: {
+    type: String,
     default: []
   }
 });

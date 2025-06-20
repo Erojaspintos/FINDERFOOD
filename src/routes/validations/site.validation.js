@@ -10,7 +10,8 @@ const siteSchema = Joi.object({
   type: Joi.number().valid(1, 2).required(), //// 1 = Restaurante y 2 = Comercio solo para comprar 
   reviews: Joi.array().items(Joi.string()),
   latitude: Joi.number().required(),
-  longitude: Joi.number().required()
+  longitude: Joi.number().required(),
+  images: Joi.array().items(Joi.string())
 });
 
 module.exports = siteSchema;
