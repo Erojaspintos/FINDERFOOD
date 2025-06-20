@@ -152,7 +152,8 @@ const addReview = async (siteId, model, userId) => {
         creationDate: creationDate,
         images : model.images
     });
-    await site.save();
+
+    return await site.save();
 };
  
 const deleteReview = async (siteId, reviewId) => {
