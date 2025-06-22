@@ -54,13 +54,13 @@ const postSiteController = async (req, res) => {
   try {
     const siteCreated = await createSite(body, id);
 
-    // --- BORRAR CACHÉ DE SITIOS PÚBLICOS ---
+/*     // --- BORRAR CACHÉ DE SITIOS PÚBLICOS ---
     const redisClient = await connectToRedis();
     const keys = await redisClient.keys('userId:0-sites*');
     for (const key of keys) {
       await redisClient.del(key);
     }
-    // --------------------------------------
+    // -------------------------------------- */
 
     await cleanCache(id);
 
