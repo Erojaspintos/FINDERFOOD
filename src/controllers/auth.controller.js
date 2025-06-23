@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 const { getAll,
   findUser,
   isValidPassword,
-  saveUser } = require("../repositories/user.repository");
+  saveUser,
+  getUsersNames } = require("../repositories/user.repository");
 const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
 const getUsersController = async (req, res) => {
