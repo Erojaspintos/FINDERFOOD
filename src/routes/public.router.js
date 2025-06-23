@@ -4,6 +4,7 @@ const publicRouter = express.Router();
 const {
   healthController,
   pingController,
+  getUsersNamesController
 } = require("../controllers/public.controller");
 
 const {
@@ -15,5 +16,6 @@ publicRouter.get("/health", healthController);
 publicRouter.get("/ping", pingController);
 publicRouter.get("/sites", getSitesController);
 publicRouter.get("/sites/:id", getSiteController);
+publicRouter.get("/usersNames", getUsersNamesController);
 
 module.exports = publicRouter;

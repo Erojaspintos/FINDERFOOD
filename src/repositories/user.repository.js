@@ -5,7 +5,7 @@ const getAll = async () => {
     return await User.find();
 }
 
-const findUser = async (email) => {
+const findUser = async (email) => {s
     return await User.findOne({ email: email });
 }
 
@@ -27,9 +27,15 @@ const isValidPassword = async (password, userPassword) => {
     return result;
 };
 
+const getUsersNames = async (ids) => {
+    console.log('ids '+ids)
+    return await User.find({ _id: { $in: ids } });
+}
+
 module.exports = {
     getAll,
     findUser,
     saveUser,
-    isValidPassword
+    isValidPassword,
+    getUsersNames
 };
