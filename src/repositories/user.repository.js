@@ -5,7 +5,7 @@ const getAll = async () => {
     return await User.find();
 }
 
-const findUser = async (email) => {s
+const findUser = async (email) => {
     return await User.findOne({ email: email });
 }
 
