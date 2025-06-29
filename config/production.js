@@ -1,3 +1,3 @@
 module.exports = {
-    maxDistance: 1000
+    maxDistance: 500000
   };
