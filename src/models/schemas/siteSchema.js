@@ -9,6 +9,8 @@ const siteSchema = new mongoose.Schema({
   description: { type: String, required: true },
   type: { type: Number, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  tag: { type: String },
+  price: { type: Number, enum: [1, 2, 3] },
 
   location: {
     type: {
@@ -27,6 +29,10 @@ const siteSchema = new mongoose.Schema({
   },
   images: {
     type: [String],
+    default: []
+  },
+  foodPreferences: {
+    type: [Number],
     default: []
   }
 });

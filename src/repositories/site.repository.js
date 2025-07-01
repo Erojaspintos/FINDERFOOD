@@ -100,7 +100,10 @@ const createSite = async (model, userId) => {
             coordinates: [model.longitude, model.latitude]
         },
         reviews: [],
-        images: model.images
+        images: model.images,
+        tag : model.tag,
+        price : model.price,
+        foodPreferences : model.foodPreferences
     })
  
    return await newSite.save();
@@ -150,7 +153,8 @@ const addReview = async (siteId, model, userId) => {
         stars: model.stars,
         userId: userId,
         creationDate: creationDate,
-        images : model.images
+        images : model.images,
+        security : model.security
     });
 
     return await site.save();
@@ -191,6 +195,7 @@ const updateSiteReview = async (siteId, reviewId, model, userId) => {
     review.comment = model.comment;
     review.stars = model.stars;
     review.images = [...model.images];
+    review.security = model.security;
 
     await site.save();
     return review;
