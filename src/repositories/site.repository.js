@@ -22,17 +22,18 @@ const getSites = async (filter, userId) => {
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
     let sites = await redisClient.get(sitesRedisKey);
 
-    if(filter.foodPreferences)
-            filter.foodPreferences = JSON.parse(filter.foodPreferences);
-
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || config.maxDistance;
 
     if (filter.name)
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
 
-    if (filter.foodPreferences && filter.foodPreferences.length > 0) 
-        mongoFilter.foodPreferences = { $in: filter.foodPreferences };
+    if (filter.foodPreferences) {
+        if (!Array.isArray(filter.foodPreferences)) {
+            filter.foodPreferences = [filter.foodPreferences];
+        }
+        filter.foodPreferences = filter.foodPreferences.map(Number);
+    }
 
     if (filter.startLat && filter.startLong) {
         mongoFilter.location = {
