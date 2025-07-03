@@ -13,21 +13,27 @@ const getSiteById = async (id) => {
         return null;
     }
 };
- 
+
 const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.stringify(filter)}`;
- 
+
 const getSites = async (filter, userId) => {
     const redisClient = await connectToRedis();
-   
+
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
     let sites = await redisClient.get(sitesRedisKey);
-    
+
+    if(filter.foodPreferences)
+            filter.foodPreferences = JSON.parse(filter.foodPreferences);
+
     const mongoFilter = buildMongoFilter(filter);
     const maxDistance = filter.maxDistance || config.maxDistance;
- 
+
     if (filter.name)
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
- 
+
+    if (filter.foodPreferences && filter.foodPreferences.length > 0) 
+        mongoFilter.foodPreferences = { $in: filter.foodPreferences };
+
     if (filter.startLat && filter.startLong) {
         mongoFilter.location = {
             $near: {
@@ -41,21 +47,21 @@ const getSites = async (filter, userId) => {
     }
 
     // Extraer y validar limit y skip
-    const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT; 
+    const limit = parseInt(filter.limit) || process.env.LIMIT_DEFAULT;
     const skip = parseInt(filter.skip) || process.env.SKIP_DEFAULT;
-    
+
     if (!sites) {
         console.log("[Reading from Mongo]");
         sites = await Site.find(mongoFilter)
-        .skip(skip)
-        .limit(limit);
-        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 600 }); // ese 60 es pa que dure un mintuo
+            .skip(skip)
+            .limit(limit);
+        await redisClient.set(sitesRedisKey, JSON.stringify(sites), { ex: 10 }); // en segundos
     } else {
         console.log("[Reading from Redis]");
     }
     return sites;
 };
- 
+
 const buildMongoFilter = (filter) => {
     const allowedFields = Object.keys(siteUpdateSchema.paths).filter(key => key !== '_id' && key !== '__v');
     const mongoFilter = {};
@@ -64,14 +70,14 @@ const buildMongoFilter = (filter) => {
             mongoFilter[key] = filter[key];
         }
     }
- 
+
     return mongoFilter;
 };
- 
+
 const createSite = async (model, userId) => {
     const siteExiste = await Site.findOne({
         name: model.name,
-        location : {
+        location: {
             $near: {
                 $geometry: {
                     type: "Point",
@@ -81,11 +87,11 @@ const createSite = async (model, userId) => {
             }
         }
     });
- 
+
     if (siteExiste) {
         throw new Error("SITE_ALREADY_EXISTS");
     }
- 
+
     const newSite = new Site({
         name: model.name,
         country: model.country,
@@ -101,14 +107,14 @@ const createSite = async (model, userId) => {
         },
         reviews: [],
         images: model.images,
-        tag : model.tag,
-        price : model.price,
-        foodPreferences : model.foodPreferences
+        tag: model.tag,
+        price: model.price,
+        foodPreferences: model.foodPreferences
     })
- 
-   return await newSite.save();
+
+    return await newSite.save();
 };
- 
+
 const updateSite = async (siteId, model) => {
     const site = await getSiteById(siteId);
 
@@ -116,7 +122,7 @@ const updateSite = async (siteId, model) => {
         type: "Point",
         coordinates: [model.longitude, model.latitude]
     };
-    
+
     if (site) {
         const updated = await Site.updateOne({ _id: siteId }, model);
         if (updated.modifiedCount > 0)
@@ -127,60 +133,60 @@ const updateSite = async (siteId, model) => {
     else
         return null;
 };
- 
+
 const deleteSite = async (id, userId, userRole) => {
-  if (!Types.ObjectId.isValid(id)) {
-    throw new Error("El ID de sitio es inválido.");
-  }
- 
-  const site = await Site.findOne({ _id: id });
- 
-  if (!site) {
-    throw new Error("SITE_NOT_EXIST");
-  }
- 
-  const result = await Site.deleteOne({ _id: id });
+    if (!Types.ObjectId.isValid(id)) {
+        throw new Error("El ID de sitio es inválido.");
+    }
+
+    const site = await Site.findOne({ _id: id });
+
+    if (!site) {
+        throw new Error("SITE_NOT_EXIST");
+    }
+
+    const result = await Site.deleteOne({ _id: id });
 };
- 
+
 const addReview = async (siteId, model, userId) => {
     const creationDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const site = await getSiteById(siteId);
- 
+
     if (!site) throw new Error("SITE_NOT_EXIST");
- 
+
     site.reviews.push({
         comment: model.comment,
         stars: model.stars,
         userId: userId,
         creationDate: creationDate,
-        images : model.images,
-        security : model.security
+        images: model.images,
+        security: model.security
     });
 
     return await site.save();
 };
- 
+
 const deleteReview = async (siteId, reviewId) => {
     const site = await getSiteById(siteId);
     if (site == null)
         throw new Error(`Sitio con id ${siteId} no encontrado.`);
- 
+
     const review = site.reviews.id(reviewId); // o usar .find(...) como opción 2
- 
+
     if (!review)
         throw new Error(`Review con id ${reviewId} no encontrada en el sitio ${siteId}.`);
- 
+
     const result = await Site.updateOne(
         { _id: siteId },
         { $pull: { reviews: { _id: reviewId } } }
     );
- 
+
     if (result.modifiedCount === 0)
         throw new Error(`No se pudo eliminar la review con id ${reviewId}.`);
 };
- 
+
 const updateSiteReview = async (siteId, reviewId, model, userId) => {
- 
+
     const site = await getSiteById(siteId);
     if (!site) {
         throw new Error("SITE_NOT_EXIST");
@@ -200,7 +206,7 @@ const updateSiteReview = async (siteId, reviewId, model, userId) => {
     await site.save();
     return review;
 };
- 
+
 module.exports = {
     getSites,
     getSiteById,
