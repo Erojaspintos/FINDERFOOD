@@ -17,6 +17,7 @@ const getSiteById = async (id) => {
 const _getSitesRedisKey = (userId, filter) => `userId:${userId}-sites:${JSON.stringify(filter)}`;
 
 const getSites = async (filter, userId) => {
+    console.log("FILTROS ", filter)
     const redisClient = await connectToRedis();
 
     const sitesRedisKey = _getSitesRedisKey(userId, filter);
@@ -29,10 +30,10 @@ const getSites = async (filter, userId) => {
         mongoFilter.name = { $regex: filter.name, $options: "i" }; // "i" para que no sea case sensitive
 
     if (filter.foodPreferences) {
-        if (!Array.isArray(filter.foodPreferences)) {
-            filter.foodPreferences = [filter.foodPreferences];
+        if (typeof filter.foodPreferences === 'string' && filter.foodPreferences.startsWith('[')) {
+            filter.foodPreferences = JSON.parse(filter.foodPreferences);
         }
-        filter.foodPreferences = filter.foodPreferences.map(Number);
+        mongoFilter.foodPreferences = { $in: filter.foodPreferences };
     }
 
     if (filter.startLat && filter.startLong) {
